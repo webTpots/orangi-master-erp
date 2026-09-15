@@ -13,19 +13,18 @@ class Marketplace extends Model
     use HasFactory;
 
     protected $fillable = [
+        'company_id',
         'name',
         'code',
-        'logo_path',
-        'base_url',
-        'api_version',
+        'is_active',
         'config',
-        'status',
     ];
 
     protected function casts(): array
     {
         return [
-            'config' => 'array',
+            'is_active' => 'boolean',
+            'config'    => 'array',
         ];
     }
 
@@ -59,6 +58,6 @@ class Marketplace extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('is_active', true);
     }
 }

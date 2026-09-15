@@ -50,7 +50,7 @@ class FlipkartController extends Controller
 
         $returnOrders = Order::where('company_id', $companyId)
             ->where('marketplace_id', $flipkart->id)
-            ->whereIn('status', ['rto', 'return_received'])
+            ->whereIn('status', ['rto', 'return'])
             ->count();
 
         $totalSettlementValue = Settlement::where('company_id', $companyId)
@@ -156,7 +156,7 @@ class FlipkartController extends Controller
             'source_type'         => 'marketplace',
             'source_id'           => $flipkartAccount?->id,
             'confidence_score'    => 1.00,
-            'mapping_status'      => 'active',
+            'mapping_status'      => 'confirmed',
             'mapped_by'           => auth()->id(),
         ]);
 

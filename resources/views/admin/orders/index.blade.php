@@ -164,7 +164,7 @@
                 </div>
 
                 {{-- Orders Table --}}
-                <div class="mt-4 overflow-hidden rounded-xl border border-surface-border bg-white shadow-card">
+                <div class="mt-4 overflow-x-auto rounded-xl border border-surface-border bg-white shadow-card">
                     <table class="min-w-full divide-y divide-surface-border">
                         <thead class="bg-surface-secondary">
                             <tr>
@@ -276,9 +276,6 @@
                 {{ $orders->links() }}
             </div>
 
-        </div>
-    </div>
-
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -303,4 +300,5 @@
             });
         });
     </script>
+    @endpush
 </x-admin-layout>

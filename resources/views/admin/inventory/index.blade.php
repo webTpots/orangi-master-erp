@@ -30,7 +30,7 @@
         </div>
         <div class="card p-4">
             <p class="stat-label">Stock Value</p>
-            <p class="text-2xl font-bold text-brand-600">{{ number_format($kpis['stock_value'], 2) }}</p>
+            <p class="text-2xl font-bold text-brand-600"><span class="text-sm font-normal text-content-secondary">&#8377;</span>{{ number_format($kpis['stock_value'], 2) }}</p>
         </div>
         <div class="card p-4">
             <p class="stat-label">Low Stock</p>
@@ -145,7 +145,7 @@
                             {{ $available }}
                         </td>
                         <td class="text-right text-content-secondary">{{ $damaged }}</td>
-                        <td class="text-right font-mono text-xs">{{ number_format($value, 2) }}</td>
+                        <td class="text-right font-mono text-xs">&#8377;{{ number_format($value, 2) }}</td>
                         <td class="text-center">
                             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $statusClass }}">
                                 {{ $statusLabel }}

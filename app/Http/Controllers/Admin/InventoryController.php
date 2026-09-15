@@ -61,8 +61,7 @@ class InventoryController extends Controller
         if ($stockLevel = $request->input('stock_level')) {
             match ($stockLevel) {
                 'out'  => $query->where(function ($q) {
-                    $q->whereDoesntHave('inventoryItems')
-                      ->orWhereHas('inventoryItems', fn ($iq) => $iq->havingRaw('SUM(available_stock) <= 0')->groupBy('sku_id'));
+                    $q->whereDoesntHave('inventoryItems', fn ($iq) => $iq->where('available_stock', '>', 0));
                 }),
                 'low'  => $query->whereHas('inventoryItems', fn ($q) => $q->where('available_stock', '>', 0)->where('available_stock', '<=', 5)),
                 'in'   => $query->whereHas('inventoryItems', fn ($q) => $q->where('available_stock', '>', 0)),

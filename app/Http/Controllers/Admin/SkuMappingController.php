@@ -20,20 +20,24 @@ class SkuMappingController extends Controller
         $query = SkuMapping::whereHas('sku', fn ($q) => $q->where('company_id', $companyId))
             ->with(['sku.variant.product.design', 'mapper']);
 
-        // Filter by status
+        // Filter by mapping status
         if ($status = $request->input('status')) {
-            $query->where('status', $status);
+            $query->where('mapping_status', $status);
         }
 
-        // Filter by source / marketplace account
-        if ($accountId = $request->input('marketplace_account_id')) {
-            $query->where('marketplace_account_id', $accountId);
+        // Filter by source type and source id
+        if ($sourceType = $request->input('source_type')) {
+            $query->where('source_type', $sourceType);
+        }
+        if ($sourceId = $request->input('source_id')) {
+            $query->where('source_id', $sourceId);
         }
 
         // Search
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('marketplace_sku', 'LIKE', "%{$search}%")
+                $q->where('external_identifier', 'LIKE', "%{$search}%")
+                  ->orWhere('external_name', 'LIKE', "%{$search}%")
                   ->orWhereHas('sku', fn ($sq) => $sq->where('sku_code', 'LIKE', "%{$search}%"));
             });
         }
@@ -41,9 +45,9 @@ class SkuMappingController extends Controller
         // Tab filters
         $tab = $request->input('tab', 'all');
         match ($tab) {
-            'mapped'    => $query->where('status', 'active'),
-            'suggested' => $query->where('status', 'suggested'),
-            'rejected'  => $query->where('status', 'rejected'),
+            'mapped'    => $query->where('mapping_status', 'confirmed'),
+            'suggested' => $query->where('mapping_status', 'suggested'),
+            'rejected'  => $query->where('mapping_status', 'rejected'),
             default     => null,
         };
 
@@ -62,12 +66,12 @@ class SkuMappingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'sku_id'                 => 'required|exists:skus,id',
-            'marketplace_account_id' => 'nullable|exists:marketplace_accounts,id',
-            'marketplace_sku'        => 'required|string|max:255',
-            'marketplace_product_id' => 'nullable|string|max:255',
-            'marketplace_listing_id' => 'nullable|string|max:255',
-            'confidence_score'       => 'nullable|numeric|min:0|max:1',
+            'sku_id'              => 'required|exists:skus,id',
+            'external_identifier' => 'required|string|max:255',
+            'external_name'       => 'nullable|string|max:255',
+            'source_type'         => 'required|string|in:marketplace,vendor',
+            'source_id'           => 'nullable|integer',
+            'confidence_score'    => 'nullable|numeric|min:0|max:1',
         ]);
 
         // Verify SKU belongs to user's company
@@ -75,14 +79,15 @@ class SkuMappingController extends Controller
         abort_unless($sku->company_id === auth()->user()->company_id, 403);
 
         $mapping = SkuMapping::create(array_merge($validated, [
+            'company_id'       => auth()->user()->company_id,
             'mapped_by'        => auth()->id(),
             'confidence_score' => $validated['confidence_score'] ?? 1.00,
-            'status'           => 'active',
+            'mapping_status'   => 'confirmed',
         ]));
 
         return redirect()
             ->route('admin.sku-mappings.index')
-            ->with('success', "Mapping created: {$mapping->marketplace_sku} -> {$sku->sku_code}");
+            ->with('success', "Mapping created: {$mapping->external_identifier} -> {$sku->sku_code}");
     }
 
     /**
@@ -93,14 +98,14 @@ class SkuMappingController extends Controller
         abort_unless($skuMapping->sku->company_id === auth()->user()->company_id, 403);
 
         $skuMapping->update([
-            'status'           => 'active',
+            'mapping_status'   => 'confirmed',
             'confidence_score' => 1.00,
             'mapped_by'        => auth()->id(),
         ]);
 
         return redirect()
             ->back()
-            ->with('success', "Mapping approved: {$skuMapping->marketplace_sku}");
+            ->with('success', "Mapping approved: {$skuMapping->external_identifier}");
     }
 
     /**
@@ -111,13 +116,13 @@ class SkuMappingController extends Controller
         abort_unless($skuMapping->sku->company_id === auth()->user()->company_id, 403);
 
         $skuMapping->update([
-            'status'    => 'rejected',
-            'mapped_by' => auth()->id(),
+            'mapping_status' => 'rejected',
+            'mapped_by'      => auth()->id(),
         ]);
 
         return redirect()
             ->back()
-            ->with('success', "Mapping rejected: {$skuMapping->marketplace_sku}");
+            ->with('success', "Mapping rejected: {$skuMapping->external_identifier}");
     }
 
     /**

@@ -85,7 +85,7 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-hidden rounded-xl border border-surface-border bg-white shadow-card">
+    <div class="overflow-x-auto rounded-xl border border-surface-border bg-white shadow-card">
         <table class="min-w-full divide-y divide-surface-border">
             <thead class="bg-surface-secondary">
                 <tr>

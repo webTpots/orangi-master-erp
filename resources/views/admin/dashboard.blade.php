@@ -1,5 +1,8 @@
 <x-admin-layout>
     <x-slot name="title">Dashboard</x-slot>
+    <x-slot name="header">
+        <span class="font-medium text-content">Dashboard</span>
+    </x-slot>
 
     {{-- Top bar: greeting + quick actions --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">

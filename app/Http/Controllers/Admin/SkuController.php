@@ -55,7 +55,7 @@ class SkuController extends Controller
         if ($stockFilter = $request->input('stock')) {
             match ($stockFilter) {
                 'out_of_stock' => $query->whereDoesntHave('inventoryItems', fn ($q) => $q->where('available_stock', '>', 0)),
-                'low_stock'    => $query->whereHas('inventoryItems', fn ($q) => $q->whereColumn('available_stock', '<=', 'minimum_stock_level')),
+                'low_stock'    => $query->where('minimum_stock_level', '>', 0)->whereHas('inventoryItems', fn ($q) => $q->where('available_stock', '>', 0)->whereRaw('available_stock <= (SELECT minimum_stock_level FROM skus WHERE skus.id = inventory_items.sku_id)')),
                 'in_stock'     => $query->whereHas('inventoryItems', fn ($q) => $q->where('available_stock', '>', 0)),
                 default        => null,
             };
@@ -83,7 +83,7 @@ class SkuController extends Controller
 
         $sku->load([
             'variant.product.design',
-            'skuMappings.marketplaceAccount.marketplace',
+            'skuMappings',
             'inventoryItems.warehouse',
             'vendorProducts.vendor',
         ]);
